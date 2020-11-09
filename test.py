@@ -15,16 +15,34 @@ def current_block():
     return current_block
 print ('Current block:', current_block())
 
+
+# -----------------
 # Get alice balance.
+def get_balance(keypair):
+    balance_info = substrate.get_runtime_state(
+        module='System',
+        storage_function='Account',
+        params=[keypair.ss58_address],
+        block_hash=current_block()
+    ).get('result')
+    return balance_info['data']['free'] / 10**12
+
 alice_keypair = Keypair.create_from_uri('//Alice')
 print ('Alice pubkey:', alice_keypair.public_key)
 print ('Alice address:', alice_keypair.ss58_address)
+print ('Alice balance:', get_balance(alice_keypair))
 
+bob_keypair = Keypair.create_from_uri('//Bob')
+print ('Bob pubkey:', bob_keypair.public_key)
+print ('Bob address:', bob_keypair.ss58_address)
+print ('Bob balance:', get_balance(bob_keypair))
 
+# -----------------
 # Print subtensor pallet info
-substrate.get_metadata_storage_function('SubtensorModule', 'Weights')
+print ('\n')
+print ('Subtensor Pallet:', substrate.get_metadata_storage_function('SubtensorModule', 'Weights'))
 
-
+# -----------------
 # Set a weight on the chain.
 def setWeights(keypair_A, keypair_B, value):
     call = substrate.compose_call(
@@ -39,16 +57,13 @@ def setWeights(keypair_A, keypair_B, value):
     print ('Done. \n')
 
 
-print ('set weights on chain.')
-alice_keypair = Keypair.create_from_uri('//Alice')
-bob_keypair = Keypair.create_from_uri('//Bob')
 value = 123123
+print ('\n')
+print ('Setting weight Alice --> Bob => {}'.format(value))
 setWeights(alice_keypair, bob_keypair, value)
-
-weights = substrate.get_runtime_state(
+weight = substrate.get_runtime_state(
     module='SubtensorModule',
     storage_function='Weights',
     params=[alice_keypair.ss58_address, bob_keypair.ss58_address]
 )
-
-print (weights['result'])
+print ('weight Alice --> Bob =', weight['result'])

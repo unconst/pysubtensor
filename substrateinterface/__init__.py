@@ -1036,7 +1036,6 @@ class SubstrateInterface:
         """
         self.init_runtime(block_hash=block_hash)
 
-        import pdb; pdb.set_trace()
         call = ScaleDecoder.get_decoder_class('Call', metadata=self.metadata_decoder)
 
         call.encode({
